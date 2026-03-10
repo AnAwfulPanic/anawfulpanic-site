@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>An Awful Panic</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Courier New", monospace;
+      background: #000000;
+      color: #39ff14;
+      text-align: center;
+    }
+
+    .crt {
+      text-shadow: 0 0 4px #39ff14, 0 0 8px #ff00ff;
+    }
+
+    h1 {
+      margin-top: 30px;
+      font-size: 48px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: #39ff14;
+    }
+
+    .border-box {
+      border: 3px solid #ff00ff;
+      padding: 10px;
+      margin: 20px auto;
+      max-width: 900px;
+      box-shadow: 0 0 10px #ff00ff;
+    }
+
+    .nav {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      text-decoration: none;
+      color: #00ffff;
+      background: #111111;
+      padding: 8px 16px;
+      border: 2px solid #00ffff;
+      text-transform: uppercase;
+      font-weight: bold;
+      box-shadow: 0 0 6px #00ffff;
+    }
+
+    .nav a:hover {
+      background: #00ffff;
+      color: #000000;
+    }
+
+    .photo {
+      width: 80%;
+      max-width: 600px;
+      margin: 20px auto;
+      display: block;
+      border: 3px solid #39ff14;
+      box-shadow: 0 0 10px #39ff14;
+    }
+
+    .section-title {
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: #ff00ff;
+      text-transform: uppercase;
+    }
+
+    /* Drum Machine Styles */
+    .drum-machine-container {
+      margin: 30px auto;
+      max-width: 900px;
+    }
+
+    .drum-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: #ff00ff;
+      text-transform: uppercase;
+    }
+
+    .drum-grid {
+      display: grid;
+      grid-template-columns: 80px repeat(8, 1fr);
+      gap: 6px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    .row-label {
+      text-align: right;
+      padding-right: 10px;
+      color: #00ffff;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .step {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      border: 2px solid #444444;
+      background: #111111;
+      cursor: pointer;
+      box-shadow: 0 0 4px #444444;
+    }
+
+    .step.active {
+      border-color: #39ff14;
+      background: #003300;
+      box-shadow: 0 0 8px #39ff14;
+    }
+
+    .step.playing {
+      outline: 2px solid #ff00ff;
+      box-shadow: 0 0 10px #ff00ff;
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 8px 20px;
+      border: 2px solid #ff00ff;
+      background: #111111;
+      color: #ff00ff;
+      text-transform: uppercase;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 8px #ff00ff;
+    }
+
+    .btn:hover {
+      background: #ff00ff;
+      color: #000000;
+    }
+
+    .tempo-control {
+      color: #00ffff;
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 150px;
+    }
+
+    .footer {
+      margin-top: 40px;
+      padding: 10px 0;
+      border-top: 3px solid #39ff14;
+      background: #050505;
+      color: #39ff14;
+      font-size: 14px;
+    }
+
+    .footer a {
+      color: #00ffff;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="crt">An Awful Panic</h1>
+
+  <!-- HERO IMAGE -->
+  <img src="logo.jpg" class="photo" alt="Band Logo">
+
+  <!-- NAVIGATION -->
+  <div class="border-box">
+    <div class="nav">
+      <a href="https://anawfulpanic.bandcamp.com" target="_blank">Bandcamp</a>
+      <a href="https://www.youtube.com/@AnAwfulPanic" target="_blank">YouTube</a>
+      <a href="https://www.instagram.com/an.awful.panic/" target="_blank">Instagram</a>
+    </div>
+  </div>
+
+  <!-- DRUM MACHINE -->
+  <div class="drum-machine-container border-box">
+    <div class="drum-title crt">Drum 80T</div>
+
+    <div class="drum-grid" id="drum-grid"></div>
+
+    <div class="controls">
+      <button class="btn" id="play-btn">Play</button>
+      <button class="btn" id="stop-btn">Stop</button>
+      <div class="tempo-control">
+        Tempo: <span id="tempo-value">120</span> BPM<br>
+        <input type="range" id="tempo-slider" min="60" max="200" value="120">
+      </div>
+    </div>
+  </div>
+
+  <!-- GIGS -->
+  <div class="border-box">
+    <div class="section-title crt">Upcoming Shows</div>
+    <div class="crt">
+      April 9 — Oshaughnessy's Pub — Alexandria, VA<br>
+      May 2 — Galactic Panther — Alexandria, VA
+    </div>
+  </div>
+
+  <!-- NEWS -->
+  <div class="border-box">
+    <div class="section-title crt">News</div>
+    <div class="crt">
+      Check out our new Single <strong>The (Large Language) Model</strong> on all streaming services now!
+    </div>
+  </div>
+
+  <!-- PHOTO GALLERY -->
+  <div class="border-box">
+    <div class="section-title crt">Photos</div>
+    <img src="live.jpg" class="photo" alt="Live Performance">
+    <img src="chair.jpg" class="photo" alt="Band Photo">
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer crt">
+    Contact: <a href="mailto:anawfulpanic@gmail.com">anawfulpanic@gmail.com</a>
+  </div>
+
+  <script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const numSteps = 8;
+    const tracks = [
+      { name: "KICK", type: "kick" },
+      { name: "SNARE", type: "snare" },
+      { name: "HAT", type: "hat" },
+      { name: "CLAP", type: "clap" },
+      { name: "F#", type: "bassFsharp" },
+      { name: "C", type: "bassC" }
+    ];
+
+    const pattern = tracks.map(() => new Array(numSteps).fill(false));
+    let currentStep = 0;
+    let isPlaying = false;
+    let tempo = 120;
+    let intervalId = null;
+
+    const gridEl = document.getElementById("drum-grid");
+
+    function createGrid() {
+      tracks.forEach((track, rowIndex) => {
+        const label = document.createElement("div");
+        label.className = "row-label crt";
+        label.textContent = track.name;
+        gridEl.appendChild(label);
+
+        for (let step = 0; step < numSteps; step++) {
+          const cell = document.createElement("div");
+          cell.className = "step";
+          cell.dataset.row = rowIndex;
+          cell.dataset.step = step;
+
+          cell.addEventListener("click", () => {
+            const r = parseInt(cell.dataset.row, 10);
+            const s = parseInt(cell.dataset.step, 10);
+            pattern[r][s] = !pattern[r][s];
+            cell.classList.toggle("active", pattern[r][s]);
+          });
+
+          gridEl.appendChild(cell);
+        }
+      });
+    }
+
+    function playStep(stepIndex) {
+      const cells = document.querySelectorAll(".step");
+      cells.forEach(cell => cell.classList.remove("playing"));
+
+      tracks.forEach((track, rowIndex) => {
+        if (pattern[rowIndex][stepIndex]) {
+          const selector = `.step[data-row="${rowIndex}"][data-step="${stepIndex}"]`;
+          const cell = document.querySelector(selector);
+          if (cell) cell.classList.add("playing");
+          triggerSound(track.type);
+        }
+      });
+    }
+
+    function triggerSound(type) {
+      const now = audioCtx.currentTime;
+
+      if (type === "kick") {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
+        gain.gain.setValueAtTime(1, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+
+      else if (type === "snare") {
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = "highpass";
+        noiseFilter.frequency.setValueAtTime(1000, now);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+
+        noise.connect(noiseFilter).connect(gain).connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.2);
+      }
+
+      else if (type === "hat") {
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = "bandpass";
+        bandpass.frequency.setValueAtTime(8000, now);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+        noise.connect(bandpass).connect(gain).connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.05);
+      }
+
+      else if (type === "clap") {
+        const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+
+        const bandpass = audioCtx.createBiquadFilter();
+        bandpass.type = "bandpass";
+        bandpass.frequency.setValueAtTime(2000, now);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(1, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+
+        noise.connect(bandpass).connect(gain).connect(audioCtx.destination);
+        noise.start(now);
+        noise.stop(now + 0.1);
+      }
+
+      else if (type === "bassFsharp") {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(185, now);
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+
+      else if (type === "bassC") {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(130, now);
+        gain.gain.setValueAtTime(0.8, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      }
+    }
+
+    function startSequencer() {
+      if (isPlaying) return;
+      isPlaying = true;
+      const intervalMs = (60_000 / tempo) / 2;
+      intervalId = setInterval(() => {
+        playStep(currentStep);
+        currentStep = (currentStep + 1) % numSteps;
+      }, intervalMs);
+    }
+
+    function stopSequencer() {
+      isPlaying = false;
+      currentStep = 0;
+      if (intervalId) clearInterval(intervalId);
+      const cells = document.querySelectorAll(".step");
+      cells.forEach(cell => cell.classList.remove("playing"));
+    }
+
+    document.getElementById("play-btn").addEventListener("click", () => {
+      audioCtx.resume();
+      startSequencer();
+    });
+
+    document.getElementById("stop-btn").addEventListener("click", () => {
+      stopSequencer();
+    });
+
+    const tempoSlider = document.getElementById("tempo-slider");
+    const tempoValue = document.getElementById("tempo-value");
+    tempoSlider.addEventListener("input", () => {
+      tempo = parseInt(tempoSlider.value, 10);
+      tempoValue.textContent = tempo;
+      if (isPlaying) {
+        stopSequencer();
+        startSequencer();
+      }
+    });
+
+    createGrid();
+  </script>
+
+</body>
+</html>
