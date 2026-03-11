@@ -56,13 +56,33 @@
       color: #000000;
     }
 
+    .hero-wrapper {
+      position: relative;
+      display: inline-block;
+      margin-top: 10px;
+    }
+
     .photo {
       width: 80%;
       max-width: 600px;
-      margin: 20px auto;
       display: block;
       border: 3px solid #39ff14;
       box-shadow: 0 0 10px #39ff14;
+    }
+
+    .art-credit {
+      position: absolute;
+      right: -18px;
+      top: 50%;
+      transform: translateY(-50%) rotate(90deg);
+      font-size: 10px;
+      color: #00ffff;
+      text-decoration: none;
+      text-shadow: 0 0 4px #00ffff;
+    }
+
+    .art-credit:hover {
+      text-decoration: underline;
     }
 
     .section-title {
@@ -87,23 +107,23 @@
 
     .drum-grid {
       display: grid;
-      grid-template-columns: 80px repeat(8, 1fr);
-      gap: 6px;
+      grid-template-columns: 70px 70px repeat(8, 1fr) 70px;
+      gap: 4px;
       align-items: center;
       margin-top: 10px;
     }
 
     .row-label {
       text-align: right;
-      padding-right: 10px;
+      padding-right: 6px;
       color: #00ffff;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .step {
-      width: 40px;
-      height: 40px;
+      width: 28px;
+      height: 28px;
       margin: 0 auto;
       border: 2px solid #444444;
       background: #111111;
@@ -120,6 +140,23 @@
     .step.playing {
       outline: 2px solid #ff00ff;
       box-shadow: 0 0 10px #ff00ff;
+    }
+
+    .effect-label {
+      font-size: 10px;
+      color: #888888;
+      margin-bottom: 2px;
+    }
+
+    .effect-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .effect-slider {
+      width: 60px;
     }
 
     .controls {
@@ -153,7 +190,32 @@
     }
 
     input[type="range"] {
-      width: 150px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: #111111;
+      height: 4px;
+      border-radius: 2px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff00ff;
+      cursor: pointer;
+      box-shadow: 0 0 4px #ff00ff;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff00ff;
+      cursor: pointer;
+      box-shadow: 0 0 4px #ff00ff;
     }
 
     .footer {
@@ -179,8 +241,13 @@
 
   <h1 class="crt">An Awful Panic</h1>
 
-  <!-- HERO IMAGE -->
-  <img src="logo.jpg" class="photo" alt="Band Logo">
+  <!-- HERO IMAGE + ART CREDIT -->
+  <div class="hero-wrapper">
+    <img src="logo.jpg" class="photo" alt="Band Logo">
+    <a href="https://www.instagram.com/curtisillustration/" target="_blank" class="art-credit crt">
+      Artwork by Matt Curtis
+    </a>
+  </div>
 
   <!-- NAVIGATION -->
   <div class="border-box">
@@ -245,8 +312,8 @@
       { name: "SNARE", type: "snare" },
       { name: "HAT", type: "hat" },
       { name: "CLAP", type: "clap" },
-      { name: "F#", type: "bassFsharp" },
-      { name: "C", type: "bassC" }
+      { name: "C", type: "bassC" },      // middle C
+      { name: "F#", type: "bassFsharp" } // F# below middle C
     ];
 
     const pattern = tracks.map(() => new Array(numSteps).fill(false));
@@ -257,13 +324,67 @@
 
     const gridEl = document.getElementById("drum-grid");
 
+    // Create per-track effect chains
+    function initTrackNodes() {
+      tracks.forEach(track => {
+        track.gain = audioCtx.createGain();
+        track.gain.gain.value = 1.0;
+
+        track.bitCrusher = audioCtx.createWaveShaper();
+        track.bitAmount = 0; // 0–1
+
+        track.filter = audioCtx.createBiquadFilter();
+        track.filter.type = "lowpass";
+        track.filter.frequency.value = 8000;
+
+        updateBitCrusherCurve(track);
+
+        track.bitCrusher.connect(track.filter).connect(audioCtx.destination);
+      });
+    }
+
+    function updateBitCrusherCurve(track) {
+      const amount = track.bitAmount || 0;
+      const n = 256;
+      const curve = new Float32Array(n);
+      const k = amount * 50; // more = harsher
+      for (let i = 0; i < n; i++) {
+        const x = (i / (n - 1)) * 2 - 1;
+        curve[i] = (1 + k) * x / (1 + k * Math.abs(x));
+      }
+      track.bitCrusher.curve = curve;
+      track.bitCrusher.oversample = "4x";
+    }
+
     function createGrid() {
       tracks.forEach((track, rowIndex) => {
+        // Bitcrusher cell (left)
+        const bitCell = document.createElement("div");
+        bitCell.className = "effect-cell";
+        const bitLabel = document.createElement("div");
+        bitLabel.className = "effect-label crt";
+        bitLabel.textContent = "Bit";
+        const bitSlider = document.createElement("input");
+        bitSlider.type = "range";
+        bitSlider.min = "0";
+        bitSlider.max = "100";
+        bitSlider.value = "0";
+        bitSlider.className = "effect-slider";
+        bitSlider.addEventListener("input", () => {
+          track.bitAmount = parseInt(bitSlider.value, 10) / 100;
+          updateBitCrusherCurve(track);
+        });
+        bitCell.appendChild(bitLabel);
+        bitCell.appendChild(bitSlider);
+        gridEl.appendChild(bitCell);
+
+        // Row label
         const label = document.createElement("div");
         label.className = "row-label crt";
         label.textContent = track.name;
         gridEl.appendChild(label);
 
+        // Steps
         for (let step = 0; step < numSteps; step++) {
           const cell = document.createElement("div");
           cell.className = "step";
@@ -279,6 +400,29 @@
 
           gridEl.appendChild(cell);
         }
+
+        // Filter cell (right)
+        const filtCell = document.createElement("div");
+        filtCell.className = "effect-cell";
+        const filtLabel = document.createElement("div");
+        filtLabel.className = "effect-label crt";
+        filtLabel.textContent = "LPF";
+        const filtSlider = document.createElement("input");
+        filtSlider.type = "range";
+        filtSlider.min = "0";
+        filtSlider.max = "1000";
+        filtSlider.value = "1000";
+        filtSlider.className = "effect-slider";
+        filtSlider.addEventListener("input", () => {
+          const v = parseInt(filtSlider.value, 10);
+          const minFreq = 300;
+          const maxFreq = 8000;
+          const freq = minFreq + (v / 1000) * (maxFreq - minFreq);
+          track.filter.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        });
+        filtCell.appendChild(filtLabel);
+        filtCell.appendChild(filtSlider);
+        gridEl.appendChild(filtCell);
       });
     }
 
@@ -291,15 +435,15 @@
           const selector = `.step[data-row="${rowIndex}"][data-step="${stepIndex}"]`;
           const cell = document.querySelector(selector);
           if (cell) cell.classList.add("playing");
-          triggerSound(track.type);
+          triggerSound(track);
         }
       });
     }
 
-    function triggerSound(type) {
+    function triggerSound(track) {
       const now = audioCtx.currentTime;
 
-      if (type === "kick") {
+      if (track.type === "kick") {
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = "sine";
@@ -307,12 +451,12 @@
         osc.frequency.exponentialRampToValueAtTime(40, now + 0.3);
         gain.gain.setValueAtTime(1, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain).connect(audioCtx.destination);
+        osc.connect(gain).connect(track.bitCrusher);
         osc.start(now);
         osc.stop(now + 0.3);
       }
 
-      else if (type === "snare") {
+      else if (track.type === "snare") {
         const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.2, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
@@ -328,12 +472,12 @@
         gain.gain.setValueAtTime(1, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
 
-        noise.connect(noiseFilter).connect(gain).connect(audioCtx.destination);
+        noise.connect(noiseFilter).connect(gain).connect(track.bitCrusher);
         noise.start(now);
         noise.stop(now + 0.2);
       }
 
-      else if (type === "hat") {
+      else if (track.type === "hat") {
         const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
@@ -349,12 +493,12 @@
         gain.gain.setValueAtTime(0.7, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
 
-        noise.connect(bandpass).connect(gain).connect(audioCtx.destination);
+        noise.connect(bandpass).connect(gain).connect(track.bitCrusher);
         noise.start(now);
         noise.stop(now + 0.05);
       }
 
-      else if (type === "clap") {
+      else if (track.type === "clap") {
         const noiseBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.1, audioCtx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
         for (let i = 0; i < output.length; i++) output[i] = Math.random() * 2 - 1;
@@ -370,33 +514,35 @@
         gain.gain.setValueAtTime(1, now);
         gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
 
-        noise.connect(bandpass).connect(gain).connect(audioCtx.destination);
+        noise.connect(bandpass).connect(gain).connect(track.bitCrusher);
         noise.start(now);
         noise.stop(now + 0.1);
       }
 
-      else if (type === "bassFsharp") {
+      else if (track.type === "bassC") {
+        // Middle C ≈ 261.63 Hz
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(185, now);
-        gain.gain.setValueAtTime(0.8, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain).connect(audioCtx.destination);
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(261.63, now);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain).connect(track.bitCrusher);
         osc.start(now);
-        osc.stop(now + 0.3);
+        osc.stop(now + 0.4);
       }
 
-      else if (type === "bassC") {
+      else if (track.type === "bassFsharp") {
+        // F# below middle C ≈ 185 Hz
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(130, now);
-        gain.gain.setValueAtTime(0.8, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
-        osc.connect(gain).connect(audioCtx.destination);
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(185.0, now);
+        gain.gain.setValueAtTime(0.7, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.connect(gain).connect(track.bitCrusher);
         osc.start(now);
-        osc.stop(now + 0.3);
+        osc.stop(now + 0.4);
       }
     }
 
@@ -438,6 +584,7 @@
       }
     });
 
+    initTrackNodes();
     createGrid();
   </script>
 
